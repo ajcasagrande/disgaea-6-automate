@@ -30,25 +30,17 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-int usb_nsgamepad_send(void);
+  int usb_nsgamepad_send(void);
 #ifdef __cplusplus
 }
 #endif
 
+#define STICK_CENTER (128)
+#define STICK_MIN (0)
+#define STICK_MAX (255)
+
 // Teensy 3.x / Teensy LC have the LED on pin 13
 const int ledPin = 13;
-
-void setup() {
-  // you can print to the Serial1 port while the NSGamepad is active!
-  Serial1.begin(115200);
-  Serial1.println("NSGamepad setup");
-
-  // initialize the digital pin as an output.
-  pinMode(ledPin, OUTPUT);
-  
-  // Sends a clean HID report to the host.
-  NSGamepad.begin();
-}
 
 
 unsigned long _btnDelay = 75;
@@ -91,13 +83,7 @@ void dpad(int8_t d) {
   delay(_delay);
 }
 
-void btnPress(uint8_t btn, int times) {
-  for (int i=0; i<times; i++) {
-    btnPress(btn);
-  }
-}
-
-void btnPress(uint8_t btn) {
+void btnPress_internal(uint8_t btn, bool noDelay=false) {
   digitalWrite(ledPin, HIGH);
   NSGamepad.press(btn);
   write();
@@ -105,8 +91,31 @@ void btnPress(uint8_t btn) {
   NSGamepad.release(btn);
   write();
   digitalWrite(ledPin, LOW);
-  delay(_delay);
+  if (!noDelay) {
+    delay(_delay);
+  }
 }
+
+void btnPress(uint8_t btn, int times=1) {
+  for (int i=0; i<times; i++) {
+    btnPress_internal(btn);
+  }
+}
+
+void skipTo(int index, int skipAmount) {
+  int amount = index-1;
+  while (amount >= int(skipAmount / 2) + 1) {
+    btnPress(NSButton_RightThrottle);
+    delay(100);
+    amount -= skipAmount;
+  }
+  if (amount > 0) {
+    down(amount);
+  } else if (amount < 0) {
+    up(-amount);
+  }
+}
+
 
 void btnA(int times=1) {
   btnPress(NSButton_A, times);
@@ -133,12 +142,14 @@ void select(unsigned long waitMS=150) {
   wait(waitMS);
 }
 
+#define SKIP_SIZE_ASSEMBLY_CHARS (8)
+#define SKIP_SIZE_ASSEMBLY_BILLS (8)
+#define NO_SKIP (99999)
+
 void reincarnate(int charIndex, int srLineItem, bool generic, bool witch, bool maxEvilities=false) {
-  if (charIndex > 1) {
-    down(charIndex - 1); // scroll to character
-  }
+  skipTo(charIndex, SKIP_SIZE_ASSEMBLY_CHARS); // scroll to character
   select(); // select character
-  down(srLineItem - 1); // scroll to Super Reincarnate
+  skipTo(srLineItem, SKIP_SIZE_ASSEMBLY_BILLS); // scroll to Super Reincarnate
 
   select(); // select SR
 
@@ -172,10 +183,11 @@ void reincarnate(int charIndex, int srLineItem, bool generic, bool witch, bool m
 
   if (maxEvilities) {
     select(); // accept max evility notice
-    delay(100);
+    // delay(100);
   }
 
-  select(); // accept evility/extracts
+  btnPress_internal(NSButton_A, true); // accept evility/extracts
+  btnPress_internal(NSButton_A, true);
   delay(300);
   btnB(); // go back to list
   delay(300);
@@ -209,54 +221,160 @@ void reincarnateWitch(int index, bool maxEvilities=false) {
   reincarnate(index, 5, true, true, maxEvilities);
 }
 
-void doBills() {
-  passBill(10);
-  passBill(11);
+void doBills() { // note: these numbers are based on war-lady as first!
+  passBill(10); // triple-exp
+  passBill(11); // welcome-party
 }
 
 void passBill(int lineItem) {
+  select(); // just select first character
+  skipTo(lineItem, SKIP_SIZE_ASSEMBLY_BILLS);
   select();
-  if (lineItem > 1) {
-    down(lineItem - 1);
-  }
-  select();
-  delay(5000); // wait for scene to load
+  delay(4000); // wait for scene to load
   btnX(); // menu
   select(); // vote
   delay(1500); // wait
   btnX(); // skip
   delay(7500); // wait for success
   select(); // accept bill pass
-  delay(10000); // wait for loading screen
+  delay(7000); // wait for loading screen
   select(); // re-enter menu
   delay(250);
 }
 
-void loop() {
+void leftStick(uint8_t x, uint8_t y) {
+  NSGamepad.leftXAxis(x);
+  NSGamepad.leftYAxis(y);
+  write();
+}
+
+void btnHold(uint8_t btn) {
+  NSGamepad.press(btn);
+  write();
+  delay(200);
+}
+
+void btnRelease(uint8_t btn) {
+  NSGamepad.release(btn);
+  write();
+  delay(200);
+}
+
+
+void quickAccessStages() {
+    btnHold(NSButton_RightThrottle);
+    delay(500);
+    leftStick(STICK_CENTER, STICK_MIN);
+    delay(200);
+    leftStick(STICK_CENTER, STICK_CENTER);
+    delay(50);
+    btnRelease(NSButton_RightThrottle);
+    delay(1000);
+}
+
+
+void quickAccessDarkAssembly() {
+    btnHold(NSButton_LeftThrottle);
+    delay(500);
+    leftStick(STICK_MIN, STICK_MIN);
+    delay(200);
+    leftStick(STICK_CENTER, STICK_CENTER);
+    delay(50);
+    btnRelease(NSButton_LeftThrottle);
+    delay(1000);
+    select(); // enter assembly
+    delay(500);
+}
+
+void setup() {
+  // you can print to the Serial1 port while the NSGamepad is active!
+  Serial1.begin(115200);
+  Serial1.println("NSGamepad setup");
+
+  // initialize the digital pin as an output.
+  pinMode(ledPin, OUTPUT);
+  
+  // Sends a clean HID report to the host.
+  NSGamepad.begin();
+
   delay(1000);
   btnA();
   delay(2500);
-  btnA();
+  btnB();
+}
+
+void loop() {
+  quickAccessDarkAssembly();
 
   doBills();
 
   delay(2000);
 
-  reincarnateWarLady(1);
-  reincarnateWarLady(2);
-  reincarnateWarLady(3);
-  reincarnateWarLady(4);
-  reincarnateWarLady(5);
-  reincarnateWarLady(6);
-  reincarnateWarLady(7);
-  reincarnateWarLady(8);
-  reincarnateWarLady(9);
+  reincarnateWarLady(1); // jinx
+  reincarnateWarLady(2); // smithereen
+  reincarnateWarLady(3, true); // ulyses
+  reincarnateWarLady(4); // trinket
+  reincarnateWarLady(5); // yuina
+  reincarnateWarLady(6); // made in japan
+  reincarnateWarLady(7); // didi
+  reincarnateWarLady(8); // gregory
+  reincarnateWarLady(9); // ai
 
-  reincarnateMao(10);
+  reincarnateMao(10); // mao
+  reincarnateZed(11); // zed
+
+  reincarnateWarLady(12, true); // hiorki
+
+  reincarnateUnique(13); //beiko
+  reincarnateUnique(14); // majorlene
+  reincarnateUnique(15); // melodia
+
+  reincarnateDLC(16, true); // killia
+  reincarnateDLC(17); // asagi 
+  reincarnateDLC(18); // adell
+  
+  reincarnateGeneric(19, false, true); // spilt milk
+  reincarnateWitch(20); // mizuki
+
+  reincarnateUnique(21); // flonne
+  reincarnateUnique(22); // misedor
+  reincarnateDLC(23); // valvotorez
+  reincarnateDLC(24); // pleinair
+  reincarnateDLC(25); // fuka
+  reincarnateUnique(26); // etna
+  reincarnateGeneric(27); // yuri
+  reincarnateDLC(28); // desco
+  reincarnateDLC(29); // raspberyl
+  reincarnateUnique(30); // ivar
+
+  btnB(2); // leave dark assembly
+
+  delay(6500); // wait for loading screen
 
 
-  delay(30000);
+  quickAccessStages();
+  delay(2000);
+  up(3); // peaceful world
+  select();
+  select(); // for some reason first one doesn't work
+  delay(1000);
+  up(); // bell of blessing
+  select(); // select stage
+  delay(500);
+  select(); // select yes
 
-//  btnPress(NSButton_A);
-  delay(_delay);
+  delay(30000); // wait for battle
+
+  select(); // accept winnings
+  delay(100);
+  select(); // skip waiting for levels
+  select(); // accept levels
+
+  delay(5000); // wait to be back at menu
+
+  btnB(3); // quit out
+
+  delay(5000); // wait for back to main screen
+
+  // loop!
 }
