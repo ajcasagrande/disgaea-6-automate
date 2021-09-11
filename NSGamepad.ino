@@ -297,13 +297,16 @@ void setup() {
   // Sends a clean HID report to the host.
   NSGamepad.begin();
 
+  write();
   delay(1000);
   btnA();
+  write();
   delay(2500);
-  btnB();
+  write();
+  // btnB();
 }
 
-void loop() {
+void reincarnationLoop() {
   quickAccessDarkAssembly();
 
   doBills();
@@ -314,7 +317,7 @@ void loop() {
   reincarnateWarLady(2); // smithereen
   reincarnateWarLady(3, true); // ulyses
   reincarnateWarLady(4); // trinket
-  reincarnateWarLady(5); // yuina
+  reincarnateWarLady(5, true); // yuina
   reincarnateWarLady(6); // made in japan
   reincarnateWarLady(7); // didi
   reincarnateWarLady(8); // gregory
@@ -325,16 +328,16 @@ void loop() {
 
   reincarnateWarLady(12, true); // hiorki
 
-  reincarnateUnique(13); //beiko
+  reincarnateUnique(13, true); // beiko
   reincarnateUnique(14); // majorlene
-  reincarnateUnique(15); // melodia
+  reincarnateUnique(15, true); // melodia
 
   reincarnateDLC(16, true); // killia
-  reincarnateDLC(17); // asagi 
+  reincarnateDLC(17); // asagi
   reincarnateDLC(18); // adell
   
   reincarnateGeneric(19, false, true); // spilt milk
-  reincarnateWitch(20); // mizuki
+  reincarnateWitch(20, true); // mizuki
 
   reincarnateUnique(21); // flonne
   reincarnateUnique(22); // misedor
@@ -354,10 +357,12 @@ void loop() {
 
   quickAccessStages();
   delay(2000);
+  right(); // just to activate the controller
   up(3); // peaceful world
-  select();
+  right(); // just to activate the controller
   select(); // for some reason first one doesn't work
   delay(1000);
+  right(); // just to activate the controller
   up(); // bell of blessing
   select(); // select stage
   delay(500);
@@ -377,4 +382,33 @@ void loop() {
   delay(5000); // wait for back to main screen
 
   // loop!
+}
+
+void juiceBarLoop() {
+  select(); // select char
+  delay(500);
+  down(); // go down to mana
+
+  for (int i=0; i <255; i++) {
+    right(); // increase mana
+    // delay(100);
+    select(); // choose
+    // delay(100);
+    select(); // accept preview
+    delay(50);
+    up(); // select yes
+    // delay(100);
+    select(); // drink
+    delay(50);
+  }
+
+  btnB(); // go back
+  delay(150);
+  down();
+  delay(150);
+}
+
+void loop() {
+  reincarnationLoop();
+  // juiceBarLoop();
 }
