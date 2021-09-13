@@ -39,6 +39,9 @@ extern "C" {
 #define STICK_MIN (0)
 #define STICK_MAX (255)
 
+#define NSButton_ZL NSButton_LeftThrottle
+#define NSButton_ZR NSButton_RightThrottle
+
 // Teensy 3.x / Teensy LC have the LED on pin 13
 const int ledPin = 13;
 
@@ -105,7 +108,7 @@ void btnPress(uint8_t btn, int times=1) {
 void skipTo(int index, int skipAmount) {
   int amount = index-1;
   while (amount >= int(skipAmount / 2) + 1) {
-    btnPress(NSButton_RightThrottle);
+    btnPress(NSButton_ZR);
     delay(100);
     amount -= skipAmount;
   }
@@ -260,30 +263,32 @@ void btnRelease(uint8_t btn) {
   delay(200);
 }
 
-
-void quickAccessStages() {
-    btnHold(NSButton_RightThrottle);
-    delay(500);
-    leftStick(STICK_CENTER, STICK_MIN);
-    delay(200);
-    leftStick(STICK_CENTER, STICK_CENTER);
-    delay(50);
-    btnRelease(NSButton_RightThrottle);
-    delay(1000);
+void quickAccess(uint8_t trigger, uint8_t stickX, uint8_t stickY) {
+  btnHold(trigger);
+  delay(500);
+  leftStick(stickX, stickY);
+  delay(200);
+  leftStick(STICK_CENTER, STICK_CENTER);
+  delay(50);
+  btnRelease(trigger);
+  delay(1000);
 }
 
 
+void quickAccessLeft(uint8_t stickX, uint8_t stickY) {
+  quickAccess(NSButton_ZL, stickX, stickY);
+}
+
+void quickAccessRight(uint8_t stickX, uint8_t stickY) {
+  quickAccess(NSButton_ZR, stickX, stickY);
+}
+
+void quickAccessStages() {
+  quickAccessRight(STICK_CENTER, STICK_MIN);
+}
+
 void quickAccessDarkAssembly() {
-    btnHold(NSButton_LeftThrottle);
-    delay(500);
-    leftStick(STICK_MIN, STICK_MIN);
-    delay(200);
-    leftStick(STICK_CENTER, STICK_CENTER);
-    delay(50);
-    btnRelease(NSButton_LeftThrottle);
-    delay(1000);
-    select(); // enter assembly
-    delay(500);
+  quickAccessLeft(STICK_MIN, STICK_MIN);
 }
 
 void setup() {
@@ -299,64 +304,22 @@ void setup() {
 
   write();
   delay(1000);
-  btnA();
+  // btnA();
+  right();
   write();
   delay(2500);
   write();
   // btnB();
 }
 
-void reincarnationLoop() {
-  quickAccessDarkAssembly();
-
-  doBills();
-
-  delay(2000);
-
-  reincarnateWarLady(1); // jinx
-  reincarnateWarLady(2); // smithereen
-  reincarnateWarLady(3, true); // ulyses
-  reincarnateWarLady(4); // trinket
-  reincarnateWarLady(5, true); // yuina
-  reincarnateWarLady(6); // made in japan
-  reincarnateWarLady(7); // didi
-  reincarnateWarLady(8); // gregory
-  reincarnateWarLady(9); // ai
-
-  reincarnateMao(10); // mao
-  reincarnateZed(11); // zed
-
-  reincarnateWarLady(12, true); // hiorki
-
-  reincarnateUnique(13, true); // beiko
-  reincarnateUnique(14); // majorlene
-  reincarnateUnique(15, true); // melodia
-
-  reincarnateDLC(16, true); // killia
-  reincarnateDLC(17); // asagi
-  reincarnateDLC(18); // adell
-  
-  reincarnateGeneric(19, false, true); // spilt milk
-  reincarnateWitch(20, true); // mizuki
-
-  reincarnateUnique(21); // flonne
-  reincarnateUnique(22); // misedor
-  reincarnateDLC(23); // valvotorez
-  reincarnateDLC(24); // pleinair
-  reincarnateDLC(25); // fuka
-  reincarnateUnique(26); // etna
-  reincarnateGeneric(27); // yuri
-  reincarnateDLC(28); // desco
-  reincarnateDLC(29); // raspberyl
-  reincarnateUnique(30); // ivar
-
-  btnB(2); // leave dark assembly
-
-  delay(6500); // wait for loading screen
-
-
+void gotoBellOfBlessing() {
   quickAccessStages();
   delay(2000);
+  right(); // just to activate the controller
+  btnPress(NSButton_ZR);
+  delay(100);
+  btnPress(NSButton_ZR);
+  delay(100);
   right(); // just to activate the controller
   up(3); // peaceful world
   right(); // just to activate the controller
@@ -380,6 +343,58 @@ void reincarnationLoop() {
   btnB(3); // quit out
 
   delay(5000); // wait for back to main screen
+}
+
+void reincarnateAll() {
+  reincarnateWarLady(1, true); // jinx
+  reincarnateWarLady(2); // smithereen
+  reincarnateWarLady(3, true); // ulyses
+  reincarnateWarLady(4); // trinket
+  reincarnateWarLady(5, true); // yuina
+  reincarnateWarLady(6); // made in japan
+  reincarnateWarLady(7); // didi
+  reincarnateWarLady(8); // gregory
+  reincarnateWarLady(9); // ai
+
+  reincarnateMao(10); // mao
+  reincarnateZed(11); // zed
+
+  reincarnateWarLady(12, true); // hiorki
+
+  reincarnateUnique(13, true); // beiko
+  reincarnateUnique(14, true); // majorlene
+  reincarnateUnique(15, true); // melodia
+
+  reincarnateDLC(16, true); // killia
+  reincarnateDLC(17); // asagi
+  reincarnateDLC(18); // adell
+  
+  reincarnateGeneric(19, false, true); // spilt milk
+  reincarnateWitch(20, true); // mizuki
+
+  reincarnateUnique(21); // flonne
+  reincarnateUnique(22); // misedor
+  reincarnateDLC(23); // valvotorez
+  reincarnateDLC(24); // pleinair
+  reincarnateDLC(25); // fuka
+  reincarnateUnique(26); // etna
+  reincarnateGeneric(27); // yuri
+  reincarnateDLC(28); // desco
+  reincarnateDLC(29); // raspberyl
+  reincarnateUnique(30); // ivar
+}
+
+void reincarnationLoop() {
+  quickAccessDarkAssembly();
+  select(); // enter assembly
+  delay(500);
+
+  doBills();
+  delay(2000);
+  btnB(2); // leave dark assembly
+  delay(6500); // wait for loading screen
+
+  gotoBellOfBlessing();
 
   // loop!
 }
@@ -408,7 +423,13 @@ void juiceBarLoop() {
   delay(150);
 }
 
+void bossKillLoop() {
+  btnPress_internal(NSButton_A, true);
+  btnPress_internal(NSButton_A, false);
+}
+
 void loop() {
-  reincarnationLoop();
+  bossKillLoop();
+  // reincarnationLoop();
   // juiceBarLoop();
 }
