@@ -204,29 +204,18 @@ void reincarnateUnique(int index, bool maxEvilities=false) {
   reincarnate(index, 4, false, false, maxEvilities);
 }
 
-void reincarnateGeneric(int index, bool witch=false, bool maxEvilities=false) {
-  reincarnate(index, 5, true, witch, maxEvilities);
-}
-
-void reincarnateMao(int index) {
-  reincarnateDLC(index, true);
-}
-
-void reincarnateZed(int index) {
-  reincarnateUnique(index, true);
-}
-
-void reincarnateWarLady(int index, bool maxEvilities=false) {
-  reincarnateGeneric(index, false, maxEvilities);
+void reincarnateGeneric(int index, bool maxEvilities=false) {
+  reincarnate(index, 5, true, false, maxEvilities);
 }
 
 void reincarnateWitch(int index, bool maxEvilities=false) {
   reincarnate(index, 5, true, true, maxEvilities);
 }
 
-void doBills() { // note: these numbers are based on war-lady as first!
+void doBills() { // note: these numbers are based on a GENERIC as first !
   passBill(10); // triple-exp
   passBill(11); // welcome-party
+  // passBill(10); // paise my performance
 }
 
 void passBill(int lineItem) {
@@ -346,20 +335,20 @@ void gotoBellOfBlessing() {
 }
 
 void reincarnateAll() {
-  reincarnateWarLady(1, true); // jinx
-  reincarnateWarLady(2); // smithereen
-  reincarnateWarLady(3, true); // ulyses
-  reincarnateWarLady(4); // trinket
-  reincarnateWarLady(5, true); // yuina
-  reincarnateWarLady(6); // made in japan
-  reincarnateWarLady(7); // didi
-  reincarnateWarLady(8); // gregory
-  reincarnateWarLady(9); // ai
+  reincarnateGeneric(1, true); // jinx
+  reincarnateGeneric(2); // smithereen
+  reincarnateGeneric(3, true); // ulyses
+  reincarnateGeneric(4); // trinket
+  reincarnateGeneric(5, true); // yuina
+  reincarnateGeneric(6); // made in japan
+  reincarnateGeneric(7); // didi
+  reincarnateGeneric(8); // gregory
+  reincarnateGeneric(9); // ai
 
-  reincarnateMao(10); // mao
-  reincarnateZed(11); // zed
+  reincarnateDLC(10, true); // mao
+  reincarnateUnique(11, true); // zed
 
-  reincarnateWarLady(12, true); // hiorki
+  reincarnateGeneric(12, true); // hiroko
 
   reincarnateUnique(13, true); // beiko
   reincarnateUnique(14, true); // majorlene
@@ -369,7 +358,7 @@ void reincarnateAll() {
   reincarnateDLC(17); // asagi
   reincarnateDLC(18); // adell
   
-  reincarnateGeneric(19, false, true); // spilt milk
+  reincarnateGeneric(19, true); // spilt milk
   reincarnateWitch(20, true); // mizuki
 
   reincarnateUnique(21); // flonne
@@ -384,6 +373,37 @@ void reincarnateAll() {
   reincarnateUnique(30); // ivar
 }
 
+void reincarnateAll2() {
+  reincarnateGeneric(1, true); // ulyses
+  reincarnateDLC(2, true); // desco
+  reincarnateDLC(3, true); // mao
+  reincarnateGeneric(4, true); // smithereen
+  reincarnateUnique(5, true); // majorlene
+  reincarnateUnique(6, true); // beiko
+  reincarnateDLC(7, true); // adell
+  reincarnateGeneric(8, true); // mizuki (as war lady)
+  reincarnateDLC(9, true); // killia
+  reincarnateDLC(10, true); // valvotorez
+  reincarnateDLC(11, true); // fuka
+  reincarnateUnique(12, true); // zed
+  reincarnateGeneric(13, true); // hiroko
+  reincarnateUnique(14, true); // melodia
+  reincarnateGeneric(15, true); // spilt milk
+  reincarnateGeneric(16, true); // yuina
+
+  reincarnateGeneric(17, true); // yuri
+  reincarnateGeneric(18, true); // jinx
+  reincarnateGeneric(19, true); // trinket
+  reincarnateGeneric(20, true); // ai
+  reincarnateGeneric(21, true); // made in japan
+  reincarnateGeneric(22, true); // didi
+  reincarnateGeneric(23, true); // thigh highs
+  reincarnateGeneric(24, true); // eliza
+  reincarnateGeneric(25, true); // annie
+  reincarnateGeneric(26, true); // eva
+  reincarnateGeneric(27, true); // pogo
+}
+
 void reincarnationLoop() {
   quickAccessDarkAssembly();
   select(); // enter assembly
@@ -391,6 +411,9 @@ void reincarnationLoop() {
 
   doBills();
   delay(2000);
+
+  reincarnateAll2();
+
   btnB(2); // leave dark assembly
   delay(6500); // wait for loading screen
 
@@ -423,13 +446,19 @@ void juiceBarLoop() {
   delay(150);
 }
 
+unsigned long began = millis();
+unsigned long maxMillis = 22 * 51 * 1000; // 22 seconds * 51 innocents * 1000 ms/s
+
 void bossKillLoop() {
-  btnPress_internal(NSButton_A, true);
-  btnPress_internal(NSButton_A, false);
+  if (millis() - began <= maxMillis) {
+    btnPress_internal(NSButton_A, true);
+    delay(_btnDelay);
+    // btnPress_internal(NSButton_A, false);
+  }
 }
 
 void loop() {
-  bossKillLoop();
-  // reincarnationLoop();
+  // bossKillLoop();
+  reincarnationLoop();
   // juiceBarLoop();
 }
